@@ -1,6 +1,9 @@
 import networkx as nx
 import numpy as np
 from collections import Counter
+from cairocffi import *
+import sys
+import matplotlib.pyplot as plt
 
 class Particle:
 	def __init__(self):
@@ -8,14 +11,10 @@ class Particle:
 		self.gbest=[]
 		self.gbest_mod=0
 		self.velocity=[]
-		#self.position=nx.Graph()
 		self.G=nx.Graph()
-		#self.temp_graph=nx.Graph()
-		#self.G.add_nodes_from([1,2,3,4,5,6,7,8,9],pos=0)
-		#self.G.add_edges_from([(1,2),(2,5),(5,4),(4,3),(3,1),(5,6),(6,9),(6,8),(6,7),(7,8),(8,9),(1,4),(2,3)])
 		self.particle=[]
 		self.modularity=0
-		self.itration=100
+		self.itration=1
 
 
 	def Input_Graph(self):
@@ -32,13 +31,11 @@ class Particle:
 			self.G.node[i]={'pos':0}
 
 	def updatepos(self,graph):
-		#self.pos=np.add(self.pos,self.velocity)
 		j=0
 		for i in graph:
 			n=[]
 			if(self.velocity[j]):
 				temp=graph.neighbors(i)
-				#[n.append(position.node[k]['pos']) for k in temp]
 				for k in temp:
 					n.append(graph.node[k]['pos'])
 				if(len(n)!=len(set(n))):
@@ -51,14 +48,10 @@ class Particle:
 						p=np.random.choice(n)
 						graph.node[i]['pos']=p
 			j+=1
-		#self.position=graph.copy()
 		return graph.copy()
-		#return position
-
+	
 
 	def updatevelocity(self,graph):
-		#R1=1.4
-		#R2=0.7
 		c1=c2=1.494
 		w=1
 		v1=[]
@@ -83,15 +76,10 @@ class Particle:
 
 	def particle_init(self):
 		self.particle=[]
-		#l=np.random.randint(1,5,self.G.number_of_nodes()).tolist()
-
-		#for i in self.pbest:
 		a=self.G.nodes()
 		a.reverse()
-
 		l=np.random.randint(self.G.nodes()[0],a[0]+1,self.G.number_of_nodes()).tolist()
 		self.pbest=l
-
 		for i in range(10):
 			a=self.G.nodes()
 			a.reverse()
@@ -105,12 +93,10 @@ class Particle:
 		return self.particle	
 
 
-
 	def fitness(self,graph):
 		m=graph.number_of_edges()
 		l=1/(2*m)
 		temp=0
-		#first=graph.nodes()[0]
 		for j in graph:	
 			for i in graph:
 				A=int(i in graph.neighbors(j))
@@ -128,21 +114,16 @@ class Particle:
 		node=graph.nodes()
 		for i in graph:
 			pos.append(graph.node[i]['pos'])
-		#print("nodes : ",node)
-		#print("position : ",pos)	
 		new_pos=[]
 		single=list(set(pos))
 		node_copy=node
 		for i in single:
-			#print("node before : ",node)
 			if(i in node):
 				node.remove(i)
 				f=True
 			else:
 				f=False	
-			#print("After",node)
 			num=np.random.choice(node)
-			#print("Random Number : ",num)
 			new_pos.append(num)
 			node.remove(num)
 			if(f is True):
@@ -151,7 +132,6 @@ class Particle:
 			t=graph.node[i]['pos']
 			d=single.index(t)
 			graph.node[i]['pos']=new_pos[d]
-
 		return graph.copy()			
 
 
@@ -163,15 +143,12 @@ class Particle:
 		f=-1
 		for p in particle:
 			t=self.fitness(p)
-			#print(t)
 			if(t>f):
 				j=0
 				f=t
 				for k in p:
 					best[j]=p.node[k]['pos']
 					j+=1
-				#print(best)	
-		#return best
 		self.gbest_mod=t
 		self.gbest=best
 
@@ -185,29 +162,29 @@ class Particle:
 		for i in range(t):
 			self.velocity.append(0)
 
-
 		for i in range(self.itration):
+
+			for ll in range(t):
+				self.velocity.append(0)
+			self.particle_init()	
 			for p in self.particle:
 				self.updatevelocity(p)
 				t1=self.updatepos(p)
 				t2=self.rearrange(t1)
-				#for r in 
-				#self.itration[i].node[]
 				for r in p:
 					p.node[r]['pos']=t2.node[r]['pos']
-					#p.node[r]['pos']=t2.node[r]['pos']
 				m=self.fitness(t2)
 
-				if(m>=self.modularity):
-				#pbest=x
+				if(m>self.modularity):
 					self.modularity=m
 					k=0
 					for d in t2:
 						self.pbest[k]=t2.node[d]['pos']
-						k+=1
+						k+=1	
 
 			if(self.modularity>self.gbest_mod):
 				self.gbest_mod=self.modularity
+
 				self.gbest=self.pbest
 
 		
@@ -216,6 +193,14 @@ class Particle:
 			self.G.node[i]['pos']=self.gbest[j]
 			j+=1
 		print("**********************************************************")	
-		print("Modularity is : ",self.gbest_mod)
+		
+		print("\nModularity is : ",self.gbest_mod)
+		print("\nNumber of Communites : ",len(set(self.gbest)))
 		print("\nGlobal Best Position : ",self.gbest)
 		print("\nGraph : ",self.G.node)
+		nx.draw(self.G,node_color=[self.G.node[i]['pos'] for i in self.G])
+		plt.show()
+
+if __name__=='__main__':
+	f=Particle()
+	f.optimize()
