@@ -1,7 +1,6 @@
 import networkx as nx
 import numpy as np
 from collections import Counter
-from cairocffi import *
 import sys
 import matplotlib.pyplot as plt
 
