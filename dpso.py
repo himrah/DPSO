@@ -1,29 +1,33 @@
 import networkx as nx
 import numpy as np
 from collections import Counter
-import sys
+import time
 import matplotlib.pyplot as plt
 
 class Particle:
 	def __init__(self):
-		self.pbest=[]
-		self.gbest=[]
-		self.gbest_mod=0
-		self.velocity=[]
-		self.G=nx.Graph()
-		self.particle=[]
-		self.modularity=0
-		self.itration=1
+		self.pbest = []
+		self.gbest = []
+		self.gbest_mod = 0
+		self.velocity = []
+		self.G = nx.Graph()
+		self.particle = []
+		self.file_name = 'dolphin.txt'
+		self.number_of_particles = 10
+		self.modularity = 0
+		self.iteration = 100
 
 
 	def Input_Graph(self):
-		temp=open('graph.txt','r').read().split()
+		temp=open(self.file_name,'r').read().split('\n')
 		graph=[]
 		for i in temp:
 			t=[]
-			for j in i.split('-'):
-				t.append(int(j))
-			graph.append(tuple(t))
+			for j in i.split():
+				if(j):
+					t.append(int(j))
+			if(t):
+				graph.append(tuple(t))
 		
 		self.G.add_edges_from(graph)
 		for i in self.G:
@@ -37,6 +41,7 @@ class Particle:
 				temp=graph.neighbors(i)
 				for k in temp:
 					n.append(graph.node[k]['pos'])
+					#print(n)
 				if(len(n)!=len(set(n))):
 					p=Counter(n).most_common(1)[0][0]
 					graph.node[i]['pos']=p
@@ -76,20 +81,19 @@ class Particle:
 	def particle_init(self):
 		self.particle=[]
 		a=self.G.nodes()
-		a.reverse()
-		l=np.random.randint(self.G.nodes()[0],a[0]+1,self.G.number_of_nodes()).tolist()
+		l=np.random.randint(1,len(a),len(a)).tolist()
 		self.pbest=l
-		for i in range(10):
+		for i in range(self.number_of_particles):
 			a=self.G.nodes()
 			a.reverse()
-			l=np.random.randint(self.G.nodes()[0],a[0]+1,self.G.number_of_nodes()).tolist()
+			l=np.random.randint(1,len(a),self.G.number_of_nodes()).tolist()
 			p=0
 			for j in self.G:
 				self.G.node[j]['pos']=l[p]
 				p+=1
 			t=self.G.copy()
 			self.particle.append(t)
-		return self.particle	
+		return self.particle
 
 
 	def fitness(self,graph):
@@ -106,7 +110,7 @@ class Particle:
 			
 		mod=temp*l
                 
-		return np.round(mod,2)
+		return np.round(mod,4)
 
 	def rearrange(self,graph):
 		pos=[]
@@ -115,7 +119,8 @@ class Particle:
 			pos.append(graph.node[i]['pos'])
 		new_pos=[]
 		single=list(set(pos))
-		node_copy=node
+		#print(graph.node)
+		#node_copy=node
 		for i in single:
 			if(i in node):
 				node.remove(i)
@@ -131,6 +136,7 @@ class Particle:
 			t=graph.node[i]['pos']
 			d=single.index(t)
 			graph.node[i]['pos']=new_pos[d]
+			#print(graph.node[i]['pos'])
 		return graph.copy()			
 
 
@@ -153,19 +159,17 @@ class Particle:
 
 
 	def optimize(self):
-		self.__init__()
+		startTime = time.time()
 		self.Input_Graph()
-		self.particle_init()                     #create particle of graph
+		self.particle_init()                     
 		self.gbest_init(self.particle)
 		t=self.G.number_of_nodes()
-		for i in range(t):
-			self.velocity.append(0)
-
-		for i in range(self.itration):
-
-			for ll in range(t):
-				self.velocity.append(0)
-			self.particle_init()	
+		vel=[]
+		for ll in range(t):
+			vel.append(0)
+		self.velocity=vel
+		for i in range(self.iteration):
+			print("Iteration : %d"%(i+1),end='\r')
 			for p in self.particle:
 				self.updatevelocity(p)
 				t1=self.updatepos(p)
@@ -179,20 +183,18 @@ class Particle:
 					k=0
 					for d in t2:
 						self.pbest[k]=t2.node[d]['pos']
-						k+=1	
+						k+=1
 
 			if(self.modularity>self.gbest_mod):
 				self.gbest_mod=self.modularity
-
 				self.gbest=self.pbest
-
 		
 		j=0		
 		for i in self.G:
 			self.G.node[i]['pos']=self.gbest[j]
 			j+=1
-		print("**********************************************************")	
-		
+		print("\n\n**********************************************************")	
+		print('\nThe script take {0} second '.format(np.round((time.time() - startTime),2)))
 		print("\nModularity is : ",self.gbest_mod)
 		print("\nNumber of Communites : ",len(set(self.gbest)))
 		print("\nGlobal Best Position : ",self.gbest)
