@@ -63,7 +63,7 @@ class Particle:
 
 	def updatevelocity(self,graph):
 		c1=c2=1.494
-		w=1
+		w = 0.9
 		v1=[]
 		v2=[]
 		v3=[]
