@@ -15,7 +15,7 @@ class Particle:
 		self.file_name = 'dolphin.txt'
 		self.number_of_particles = 10
 		self.modularity = 0
-		self.iteration = 100
+		self.iteration = 20
 
 
 	def Input_Graph(self):
@@ -26,12 +26,18 @@ class Particle:
 			for j in i.split():
 				if(j):
 					t.append(int(j))
+			#print(t)
 			if(t):
 				graph.append(tuple(t))
 		
+		#print(graph)
 		self.G.add_edges_from(graph)
+		#print(self.G)
+		j=0
 		for i in self.G:
-			self.G.node[i]={'pos':0}
+			#print(i)
+			self.G.node[i]={'pos':j}
+			j+=1
 
 	def updatepos(self,graph):
 		j=0
@@ -65,10 +71,16 @@ class Particle:
 		v5=[]
 		j=0
 		for i in graph:
+			#print(i)
+			#print(graph)
+			#print("i value",i)
+			#print("j value",j)
 			v1.append(int((self.pbest[j]==graph.node[i]['pos']) and '0' or '1'))
 			v2.append(int((self.gbest[j]==graph.node[i]['pos']) and '0' or '1'))
-			r1=np.random.choice([0,1])
-			r2=np.random.choice([0,1])
+			#r1=np.random.choice([0,1])
+			#r2=np.random.choice([0,1])
+			r1=float(np.round(np.random.uniform(0.1,0.9),3))
+			r2=float(np.round(np.random.uniform(0.1,0.9),3))
 			R1=c1*r1
 			R2=c2*r2
 			v3.append(v1[j]*R1)
@@ -79,21 +91,43 @@ class Particle:
 
 
 	def particle_init(self):
-		self.particle=[]
+		#self.particle=[]
+		#j=1
 		a=self.G.nodes()
 		l=np.random.randint(1,len(a),len(a)).tolist()
 		self.pbest=l
-		for i in range(self.number_of_particles):
-			a=self.G.nodes()
-			a.reverse()
-			l=np.random.randint(1,len(a),self.G.number_of_nodes()).tolist()
-			p=0
-			for j in self.G:
-				self.G.node[j]['pos']=l[p]
-				p+=1
-			t=self.G.copy()
-			self.particle.append(t)
+
+
+
+		#for i in self.G:
+		#	self.G.node[i]['pos']=j
+		#	j+=1
+		copy=self.G.copy()
+		#print(copy)
+		for j in range(self.number_of_particles):
+			for i in copy:
+				n=[]
+				temp=copy.neighbors(i)
+				for k in temp:
+					n.append(copy.node[k]['pos'])
+				if(len(n)!=len(set(n))):
+					p=Counter(n).most_common(1)[0][0]
+					#print(self.G)
+					self.G.node[i]['pos']=p
+				else:
+					p=np.random.choice(n)
+					#print(self.G)
+					self.G.node[i]['pos']=p
+			#print(self.G)				
+			self.particle.append(self.G)
+		#print(self.particle[0])	
+		#print(self.particle)
+		j=0
+		for i in self.particle:
+			#print(i.node[1])
+			j+=1
 		return self.particle
+
 
 
 	def fitness(self,graph):
@@ -124,6 +158,7 @@ class Particle:
 		for i in single:
 			if(i in node):
 				node.remove(i)
+				#print(node)
 				f=True
 			else:
 				f=False	
@@ -161,7 +196,8 @@ class Particle:
 	def optimize(self):
 		startTime = time.time()
 		self.Input_Graph()
-		self.particle_init()                     
+		self.particle_init()
+		#print(self.particle)
 		self.gbest_init(self.particle)
 		t=self.G.number_of_nodes()
 		vel=[]
@@ -169,15 +205,19 @@ class Particle:
 			vel.append(0)
 		self.velocity=vel
 		for i in range(self.iteration):
-			print("Iteration : %d"%(i+1),end='\r')
+			#print("Iteration : %d\n"%(i+1),end='\r')
 			for p in self.particle:
+				#print(p.node)
 				self.updatevelocity(p)
 				t1=self.updatepos(p)
+				print(self.velocity)
+				#print(t1)
 				t2=self.rearrange(t1)
+				
 				for r in p:
 					p.node[r]['pos']=t2.node[r]['pos']
 				m=self.fitness(t2)
-
+				#print("best modularity : %f"%m,end='\r')
 				if(m>self.modularity):
 					self.modularity=m
 					k=0
@@ -187,6 +227,7 @@ class Particle:
 
 			if(self.modularity>self.gbest_mod):
 				self.gbest_mod=self.modularity
+				
 				self.gbest=self.pbest
 		
 		j=0		
