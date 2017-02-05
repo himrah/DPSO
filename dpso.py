@@ -49,7 +49,7 @@ class Particle:
 					n.append(graph.node[k]['pos'])
 					#print(n)
 				if(len(n)!=len(set(n))):
-					p=Counter(n).most_common(1)[0][0]
+					p = Counter(n).most_common(1)[0][0]
 					graph.node[i]['pos']=p
 				else:
 					if(graph.node[i]['pos'] in n):
