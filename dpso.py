@@ -44,7 +44,7 @@ class Particle:
 		for i in graph:
 			n=[]
 			if(self.velocity[j]):
-				temp=graph.neighbors(i)
+				temp = graph.neighbors(i)
 				for k in temp:
 					n.append(graph.node[k]['pos'])
 					#print(n)
