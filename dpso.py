@@ -19,7 +19,7 @@ class Particle:
 
 
 	def Input_Graph(self):
-		temp=open(self.file_name,'r').read().split('\n')
+		temp = open(self.file_name, 'r').read().split('\n')
 		graph=[]
 		for i in temp:
 			t=[]
