@@ -97,14 +97,13 @@ class Particle:
 			self.velocity[j]=(int((v5[j]>=1) and '1' or '0'))
 			j+=1
 
-
+		#	initlization base on same neighbors
 	def particle_init(self):
 		self.particle=[]
 		#j=1
 		a=self.G.nodes()
 		l=np.random.randint(1,len(a),len(a)).tolist()
-		self.pbest=l
-		#initlization base on same neighbors
+		self.pbest = l
 		for j in range(self.number_of_particles):
 			copy=self.G.copy()
 			num=np.random.randint(1,len(a))
