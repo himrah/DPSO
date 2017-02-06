@@ -91,22 +91,22 @@ class Particle:
 			self.velocity[j]=(int((v5[j]>=1) and '1' or '0'))
 			j+=1
 
-		def particle_init(self):
-			self.particle=[]
-			#j=1^M
-			a=self.G.nodes()
-			l=np.random.randint(1,len(a),len(a)).tolist()
-			self.pbest=l
-			for i in range(self.number_of_particles):
-				a = self.G.nodes()
-				l = np.random.randint(1, self.G.number_of_nodes(), self.G.number_of_nodes()).tolist()
-				p = 0
-				for j in self.G:
-					self.G.node[j]['pos'] = l[p]
-					p += 1
-				t = self.G.copy()
-				self.particle.append(t)
-			return self.particle
+	def particle_init(self):
+		#self.particle=[]
+		#j=1^M
+		a=self.G.nodes()
+		l=np.random.randint(1,len(a),len(a)).tolist()
+		self.pbest=l
+		for i in range(self.number_of_particles):
+			a = self.G.nodes()
+			l = np.random.randint(1, self.G.number_of_nodes(), self.G.number_of_nodes()).tolist()
+			p = 0
+			for j in self.G:
+				self.G.node[j]['pos'] = l[p]
+				p += 1
+			t = self.G.copy()
+			self.particle.append(t)
+		return self.particle
 
 	def fitness(self,graph):
 		m=graph.number_of_edges()
