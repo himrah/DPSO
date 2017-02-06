@@ -97,21 +97,30 @@ class Particle:
 			self.velocity[j]=(int((v5[j]>=1) and '1' or '0'))
 			j+=1
 
-		#	initlization base on same neighbors
+	
 	def particle_init(self):
-		self.particle=[]
-		#j=1
 		a=self.G.nodes()
 		l=np.random.randint(1,len(a),len(a)).tolist()
-		self.pbest = l
-		for j in range(self.number_of_particles):
+		self.pbest=l
+		dgre={}
+		for i in self.G:
+			dgre.update({i:self.G.degree(i)})
+		sort_degree=sorted(dgre.items(), key=operator.itemgetter(1),reverse=True)
+		for i in range(self.number_of_particles):
 			copy=self.G.copy()
-			num=np.random.randint(1,len(a))
-			temp=copy.neighbors(num)
-			for i in temp:
-				copy.node[i]['pos']=num
-			self.particle.append(copy)
+			num=sort_degree[i][0]
+			first_node_neigbors=copy.neighbors(num)
+			dg={j:copy.degree(j) for j in first_node_neigbors}
+			#dg={j:g.degree(j) for j in n}
+			t=sorted(dg.items(), key=operator.itemgetter(1),reverse=True)
+			num1=t[0][0]
+			second_node_neigbors=copy.neighbors(num1)
+			node=list(set(first_node_neigbors).intersection(second_node_neigbors))
+			node+=[num,num1]
+			for j in node:
+				copy.node[j]['pos']=num
 
+			self.particle.append(copy)
 	def fitness(self,graph):
 		m=graph.number_of_edges()
 		l=1/(2*m)
