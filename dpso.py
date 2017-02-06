@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 from collections import Counter
 import time
+import operator
 import matplotlib.pyplot as plt
 
 class Particle:
@@ -12,14 +13,13 @@ class Particle:
 		self.velocity = []
 		self.G = nx.Graph()
 		self.particle = []
-		self.file_name = 'dolphin.txt'
+		self.file_name = 'graph.txt'
 		self.number_of_particles = 10
 		self.modularity = 0
 		self.iteration = 20
 
-
 	def Input_Graph(self):
-		temp = open(self.file_name, 'r').read().split('\n')
+		temp=open(self.file_name,'r').read().split('\n')
 		graph=[]
 		for i in temp:
 			t=[]
@@ -44,12 +44,12 @@ class Particle:
 		for i in graph:
 			n=[]
 			if(self.velocity[j]):
-				temp = graph.neighbors(i)
+				temp=graph.neighbors(i)
 				for k in temp:
 					n.append(graph.node[k]['pos'])
 					#print(n)
 				if(len(n)!=len(set(n))):
-					p = Counter(n).most_common(1)[0][0]
+					p=Counter(n).most_common(1)[0][0]
 					graph.node[i]['pos']=p
 				else:
 					if(graph.node[i]['pos'] in n):
@@ -61,9 +61,17 @@ class Particle:
 		return graph.copy()
 	
 
-	def updatevelocity(self,graph):
-		c1 = c2 = 1.494
-		w = 0.9
+	def iweight(self,k):
+		wmax=0.9
+		wmin=0.4
+		kmax=self.iteration
+		w=((wmax-wmin)*((kmax-k)/kmax))+wmin
+		return w
+
+
+	def updatevelocity(self,graph,k):
+		c1=c2=1.494
+		w=self.iweight(k)
 		v1=[]
 		v2=[]
 		v3=[]
@@ -91,18 +99,19 @@ class Particle:
 
 
 	def particle_init(self):
+		self.particle=[]
+		#j=1
+		a=self.G.nodes()
+		l=np.random.randint(1,len(a),len(a)).tolist()
 		self.pbest=l
-		for i in range(self.number_of_particles):
-			a = self.G.nodes()
-			# a.reverse()
-			l = np.random.randint(1, self.G.number_of_nodes(), self.G.number_of_nodes()).tolist()
-			p = 0
-			for j in self.G:
-				self.G.node[j]['pos'] = l[p]
-				p += 1
-			t = self.G.copy()
-			self.particle.append(t)
-		return self.particle
+		#initlization base on same neighbors
+		for j in range(self.number_of_particles):
+			copy=self.G.copy()
+			num=np.random.randint(1,len(a))
+			temp=copy.neighbors(num)
+			for i in temp:
+				copy.node[i]['pos']=num
+			self.particle.append(copy)
 
 	def fitness(self,graph):
 		m=graph.number_of_edges()
@@ -127,8 +136,6 @@ class Particle:
 			pos.append(graph.node[i]['pos'])
 		new_pos=[]
 		single=list(set(pos))
-		#print(graph.node)
-		#node_copy=node
 		for i in single:
 			if(i in node):
 				node.remove(i)
@@ -182,7 +189,7 @@ class Particle:
 			#print("Iteration : %d\n"%(i+1),end='\r')
 			for p in self.particle:
 				#print(p.node)
-				self.updatevelocity(p)
+				self.updatevelocity(p,i+1)
 				t1=self.updatepos(p)
 				print(self.velocity)
 				#print(t1)
