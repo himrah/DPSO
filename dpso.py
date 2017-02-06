@@ -13,7 +13,7 @@ class Particle:
 		self.velocity = []
 		self.G = nx.Graph()
 		self.particle = []
-		self.file_name = 'graph.txt'
+		self.file_name = 'dolphin.txt'
 		self.number_of_particles = 10
 		self.modularity = 0
 		self.iteration = 20
@@ -79,14 +79,8 @@ class Particle:
 		v5=[]
 		j=0
 		for i in graph:
-			#print(i)
-			#print(graph)
-			#print("i value",i)
-			#print("j value",j)
 			v1.append(int((self.pbest[j]==graph.node[i]['pos']) and '0' or '1'))
 			v2.append(int((self.gbest[j]==graph.node[i]['pos']) and '0' or '1'))
-			#r1=np.random.choice([0,1])
-			#r2=np.random.choice([0,1])
 			r1=float(np.round(np.random.uniform(0.1,0.9),3))
 			r2=float(np.round(np.random.uniform(0.1,0.9),3))
 			R1=c1*r1
@@ -97,30 +91,23 @@ class Particle:
 			self.velocity[j]=(int((v5[j]>=1) and '1' or '0'))
 			j+=1
 
-	
-	def particle_init(self):
-		a=self.G.nodes()
-		l=np.random.randint(1,len(a),len(a)).tolist()
-		self.pbest=l
-		dgre={}
-		for i in self.G:
-			dgre.update({i:self.G.degree(i)})
-		sort_degree=sorted(dgre.items(), key=operator.itemgetter(1),reverse=True)
-		for i in range(self.number_of_particles):
-			copy=self.G.copy()
-			num=sort_degree[i][0]
-			first_node_neigbors=copy.neighbors(num)
-			dg={j:copy.degree(j) for j in first_node_neigbors}
-			#dg={j:g.degree(j) for j in n}
-			t=sorted(dg.items(), key=operator.itemgetter(1),reverse=True)
-			num1=t[0][0]
-			second_node_neigbors=copy.neighbors(num1)
-			node=list(set(first_node_neigbors).intersection(second_node_neigbors))
-			node+=[num,num1]
-			for j in node:
-				copy.node[j]['pos']=num
+		def particle_init(self):
+			self.particle=[]
+			#j=1^M
+			a=self.G.nodes()
+			l=np.random.randint(1,len(a),len(a)).tolist()
+			self.pbest=l
+			for i in range(self.number_of_particles):
+				a = self.G.nodes()
+				l = np.random.randint(1, self.G.number_of_nodes(), self.G.number_of_nodes()).tolist()
+				p = 0
+				for j in self.G:
+					self.G.node[j]['pos'] = l[p]
+					p += 1
+				t = self.G.copy()
+				self.particle.append(t)
+			return self.particle
 
-			self.particle.append(copy)
 	def fitness(self,graph):
 		m=graph.number_of_edges()
 		l=1/(2*m)
@@ -194,13 +181,10 @@ class Particle:
 			vel.append(0)
 		self.velocity=vel
 		for i in range(self.iteration):
-			#print("Iteration : %d\n"%(i+1),end='\r')
+			print("Iteration : %d"%(i+1),end='\r')
 			for p in self.particle:
-				#print(p.node)
 				self.updatevelocity(p,i+1)
 				t1=self.updatepos(p)
-				print(self.velocity)
-				#print(t1)
 				t2=self.rearrange(t1)
 				
 				for r in p:
