@@ -92,21 +92,19 @@ class Particle:
 			j+=1
 
 	def particle_init(self):
-		#self.particle=[]
-		#j=1^M
+		self.particle=[]
+		#j=1
 		a=self.G.nodes()
 		l=np.random.randint(1,len(a),len(a)).tolist()
 		self.pbest=l
-		for i in range(self.number_of_particles):
-			a = self.G.nodes()
-			l = np.random.randint(1, self.G.number_of_nodes(), self.G.number_of_nodes()).tolist()
-			p = 0
-			for j in self.G:
-				self.G.node[j]['pos'] = l[p]
-				p += 1
-			t = self.G.copy()
-			self.particle.append(t)
-		return self.particle
+		#initlization base on same neighbors
+		for j in range(self.number_of_particles):
+			copy=self.G.copy()
+			num=np.random.randint(1,len(a))
+			temp=copy.neighbors(num)
+			for i in temp:
+				copy.node[i]['pos']=num
+			self.particle.append(copy)
 
 	def fitness(self,graph):
 		m=graph.number_of_edges()
