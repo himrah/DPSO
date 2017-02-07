@@ -103,7 +103,7 @@ class Particle:
 			num=np.random.randint(1,len(a))
 			temp=copy.neighbors(num)
 			for i in temp:
-				copy.node[i]['pos']=num
+				copy.node[i]['pos'] = num
 			self.particle.append(copy)
 
 	def fitness(self,graph):
