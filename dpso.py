@@ -109,7 +109,7 @@ class Particle:
 						self.G.node[i]['pos']=p
 				else:
 						p=np.random.choice(n)
-						self.G.node[i]['pos']=p
+						self.G.node[i]['pos'] = p
 			self.particle.append(self.G)
 
 	def fitness(self,graph):
